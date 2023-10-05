@@ -132,7 +132,7 @@ main(int argc, char *argv[])
 
 	/* done */
 
-	file_delete(SOFILE);
-	jitc_close(jitc);
+	/*file_delete(SOFILE);
+	jitc_close(jitc);*/
 	return 0;
 }
