@@ -10,6 +10,7 @@
 #include "jitc.h"
 #include "parser.h"
 #include "system.h"
+#include <math.h>
 
 /* export LD_LIBRARY_PATH=. */
 
@@ -69,22 +70,32 @@ reflect(const struct parser_dag *dag, FILE *file)
 static void
 generate(const struct parser_dag *dag, FILE *file)
 {
-	fprintf(file, "double evaluate(void) {\n");
+	fprintf(file, "typedef double (*sigmoid_def)(double);\n");
+    fprintf(file, "double evaluate(long int sigmoid_address) {\n");
 	reflect(dag, file);
-	fprintf(file, "return t%d;\n}\n", dag->id);
+    fprintf(file, "sigmoid_def sigmoid_fnc = (sigmoid_def)sigmoid_address; \n");
+	fprintf(file, "return sigmoid_fnc(t%d);\n}\n", dag->id);
 }
 
-typedef double (*evaluate_t)(void);
+typedef double (*evaluate_t)(long int);
+
+static double
+sigmoid (double n) {
+    return (1 / (1 + exp( -n)));
+}
 
 int
 main(int argc, char *argv[])
 {
-	const char *SOFILE = "out.so";
+    const char *SOFILE = "out.so";
 	const char *CFILE = "out.c";
 	struct parser *parser;
 	struct jitc *jitc;
 	evaluate_t fnc;
 	FILE *file;
+    long int address;
+    address = (long int)sigmoid;
+
 
 	/* usage */
 
@@ -119,8 +130,8 @@ main(int argc, char *argv[])
 	}
 	file_delete(CFILE);
 
-	/* dynamic load */
-
+	/* dynamic load */ 
+    
 	if (!(jitc = jitc_open(SOFILE)) ||
 	    !(fnc = (evaluate_t)jitc_lookup(jitc, "evaluate"))) {
 		file_delete(SOFILE);
@@ -128,9 +139,9 @@ main(int argc, char *argv[])
 		TRACE(0);
 		return -1;
 	}
-	printf("%f\n", fnc());
 
-	/* done */
+
+	printf("%f\n", fnc(address));
 
 	file_delete(SOFILE);
 	jitc_close(jitc);
