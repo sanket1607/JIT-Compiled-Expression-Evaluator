@@ -8,8 +8,8 @@
 #
 
 CC     = gcc
-CFLAGS = -ansi -pedantic -Wall -Wextra -Werror -Wfatal-errors -fpic -O3
-LDLIBS =
+CFLAGS = -ansi -pedantic -Wall -Wextra -Werror -Wfatal-errors -fpic -O3 -g
+LDLIBS = -lm
 DEST   = cs238
 SRCS  := $(wildcard *.c)
 OBJS  := $(SRCS:.c=.o)
