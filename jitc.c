@@ -48,7 +48,11 @@ int jitc_compile(const char *input, const char *output) {
 
 
     p_id = fork();
-    if (!p_id) {
+    
+    if (p_id < 0) {
+        EXIT("Fork failed");
+    }
+    else if (p_id == 0) {
      
         char *args[8]; 
         args[0] = "gcc";
@@ -60,12 +64,12 @@ int jitc_compile(const char *input, const char *output) {
         args[6] = input_file;
         args[7] = NULL;
         execv("/usr/bin/gcc",args);
-        exit(0);
+        EXIT("Execv failed");
     }
     else {
         waitpid(-1, &status, 0);
         if (WIFEXITED(status)) {
-            return 0;
+            return WEXITSTATUS(status);
         }
         else
             return -1;
